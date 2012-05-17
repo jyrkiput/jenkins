@@ -319,6 +319,10 @@ public class MavenModule extends AbstractMavenProject<MavenModule,MavenBuild> im
         return super.newBuild();
     }
 
+    protected MavenBuild newBuild(int buildNumber) throws IOException {
+        return super.newBuild(buildNumber);
+    }
+
     public ModuleName getModuleName() {
         return moduleName;
     }

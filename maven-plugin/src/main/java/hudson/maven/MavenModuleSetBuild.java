@@ -269,7 +269,10 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
 
         for (MavenModule m : mods) {
             List<MavenBuild> builds = new ArrayList<MavenBuild>();
-            MavenBuild b = m.getNearestBuild(number);
+            MavenBuild b = m.getBuildByNumber(number);
+            if( b == null ) {
+                b = m.getNearestBuild(number);
+            }
             while(b!=null && b.getNumber()<end) {
                 builds.add(b);
                 b = b.getNextBuild();
@@ -493,17 +496,18 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
      */
     /*package*/ void notifyModuleBuild(MavenBuild newBuild) {
         try {
-            // update module set build number
-            getParent().updateNextBuildNumber();
-
-            // update actions
-            Map<MavenModule, List<MavenBuild>> moduleBuilds = getModuleBuilds();
-
-            // actions need to be replaced atomically especially
-            // given that two builds might complete simultaneously.
-            // use a separate lock object since this synchronized block calls into plugins,
-            // which in turn can access other MavenModuleSetBuild instances, which will result in a dead lock.
             synchronized(notifyModuleBuildLock) {
+                // update module set build number
+                //getParent().updateNextBuildNumber();
+
+                // update actions
+                Map<MavenModule, List<MavenBuild>> moduleBuilds = getModuleBuilds();
+
+                // actions need to be replaced atomically especially
+                // given that two builds might complete simultaneously.
+                // use a separate lock object since this synchronized block calls into plugins,
+                // which in turn can access other MavenModuleSetBuild instances, which will result in a dead lock.
+
                 boolean modified = false;
 
                 List<Action> actions = getActions();
@@ -532,13 +536,14 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                     save();
                     getProject().updateTransientActions();
                 }
-            }
 
-            // symlink to this module build
-            String moduleFsName = newBuild.getProject().getModuleName().toFileSystemName();
-            Util.createSymlink(getRootDir(),
-                    "../../modules/"+ moduleFsName +"/builds/"+newBuild.getId() /*ugly!*/,
-                    moduleFsName, StreamTaskListener.NULL);
+
+                // symlink to this module build
+                String moduleFsName = newBuild.getProject().getModuleName().toFileSystemName();
+                Util.createSymlink(getRootDir(),
+                        "../../modules/"+ moduleFsName +"/builds/"+newBuild.getId() /*ugly!*/,
+                        moduleFsName, StreamTaskListener.NULL);
+            }
         } catch (IOException e) {
             LOGGER.log(Level.WARNING,"Failed to update "+this,e);
         } catch (InterruptedException e) {
@@ -661,7 +666,7 @@ public class MavenModuleSetBuild extends AbstractMavenBuild<MavenModuleSet,Maven
                         }
 
                         for (MavenModule m : project.sortedActiveModules) {
-                            MavenBuild mb = m.newBuild();
+                            MavenBuild mb = m.newBuild(number);
                             // JENKINS-8418
                             mb.setBuiltOnStr( getBuiltOnStr() );
                             // Check if incrementalBuild is selected and that there are changes -

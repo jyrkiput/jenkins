@@ -168,6 +168,10 @@ public abstract class AbstractBuild<P extends AbstractProject<P,R>,R extends Abs
         super(project, buildDir);
     }
 
+    protected AbstractBuild(P project, Integer buildNumber) throws IOException {
+        super(project, buildNumber);
+    }
+
     public final P getProject() {
         return getParent();
     }

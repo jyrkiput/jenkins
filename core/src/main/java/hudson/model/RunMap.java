@@ -50,7 +50,7 @@ import java.text.ParseException;
 public final class RunMap<R extends Run<?,R>> extends AbstractMap<Integer,R> implements SortedMap<Integer,R> {
     // copy-on-write map
     private transient volatile SortedMap<Integer,R> builds =
-        new TreeMap<Integer,R>(COMPARATOR);
+        Collections.synchronizedSortedMap(new TreeMap<Integer,R>(COMPARATOR));
 
     /**
      * Read-only view of this map.

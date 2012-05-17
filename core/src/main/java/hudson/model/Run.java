@@ -259,6 +259,11 @@ public abstract class Run <JobT extends Job<JobT,RunT>,RunT extends Run<JobT,Run
         this.number = project.assignBuildNumber();
     }
 
+    protected Run(JobT job, Integer buildNumber) throws IOException {
+        this(job, new GregorianCalendar());
+        this.number = buildNumber;
+    }
+
     /**
      * Constructor for creating a {@link Run} object in
      * an arbitrary state.

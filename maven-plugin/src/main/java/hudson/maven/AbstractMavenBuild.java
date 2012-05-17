@@ -54,6 +54,10 @@ public abstract class AbstractMavenBuild<P extends AbstractMavenProject<P,B>,B e
         super(project, buildDir);
     }
 
+    public AbstractMavenBuild(P job, Integer buildNumber) throws IOException {
+        super(job, buildNumber);
+    }
+
     @Override
     public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
         EnvVars envs = super.getEnvironment(log);

@@ -99,6 +99,9 @@ public class MavenBuild extends AbstractMavenBuild<MavenModule,MavenBuild> {
     public MavenBuild(MavenModule job) throws IOException {
         super(job);
     }
+    public MavenBuild(MavenModule job, Integer buildNumber) throws IOException {
+        super(job, buildNumber);
+    }
 
     public MavenBuild(MavenModule job, Calendar timestamp) {
         super(job, timestamp);

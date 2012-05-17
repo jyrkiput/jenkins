@@ -925,11 +925,14 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
 
     // keep track of the previous time we started a build
     private transient long lastBuildStartTime;
-    
+
+    protected synchronized R newBuild() throws IOException {
+        return newBuild(null);
+    }
     /**
      * Creates a new build of this project for immediate execution.
      */
-    protected synchronized R newBuild() throws IOException {
+    protected synchronized R newBuild(Integer buildNumber) throws IOException {
     	// make sure we don't start two builds in the same second
     	// so the build directories will be different too
     	long timeSinceLast = System.currentTimeMillis() - lastBuildStartTime;
@@ -941,7 +944,13 @@ public abstract class AbstractProject<P extends AbstractProject<P,R>,R extends A
     	}
     	lastBuildStartTime = System.currentTimeMillis();
         try {
-            R lastBuild = getBuildClass().getConstructor(getClass()).newInstance(this);
+            R lastBuild = null;
+            if(buildNumber != null) {
+                lastBuild = getBuildClass().getConstructor(getClass(), Integer.class).newInstance(this, buildNumber);
+            }
+            if(lastBuild == null) {
+                lastBuild = getBuildClass().getConstructor(getClass()).newInstance(this);
+            }
             builds.put(lastBuild);
             return lastBuild;
         } catch (InstantiationException e) {
